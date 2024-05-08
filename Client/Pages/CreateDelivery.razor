@@ -1,6 +1,8 @@
 ﻿@page "/createdelivery"
 @using JourneyPlanner.Shared.Models
 @inject HttpClient Http
+@inject NavigationManager NavigationManager
+
 
 <h1>Create Delivery</h1>
 <div id="divStatus" style="display:none;">
@@ -78,7 +80,8 @@
 </div>
 
 @code {
-    private Delivery delivery = new Delivery();
+    //private Delivery delivery = new();
+    protected JourneyPlanner.Shared.Models.Delivery delivery = new();
     private string Location { get; set; }
     private string Lat { get; set; }
     private string Lng { get; set; }
@@ -88,7 +91,7 @@
     {
         delivery.Latitude = Lat;
         delivery.Longitude = Lng;
-        var response = await Http.PostAsJsonAsync<Delivery>("/api/DeliveryController/CreateDelivery", delivery);
+        var response = await Http.PostAsJsonAsync("/api/DeliveryController/CreateDelivery", delivery);
         if (response.IsSuccessStatusCode)
         {
 

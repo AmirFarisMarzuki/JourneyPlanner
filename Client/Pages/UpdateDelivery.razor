@@ -1,12 +1,19 @@
-﻿@page "/updatedelivery"
+﻿@page "/updatedelivery/{Id}"
 @using JourneyPlanner.Shared.Models
+@inject NavigationManager NavigationManager
 @inject HttpClient Http
 
 <h1>Update Delivery</h1>
 <div id="divStatus" style="display:none;">
     <label id="lblStatus"></label>
 </div>
-<div class="row">
+@if(delivery == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
     <div class="col-6">
         <form @onsubmit="Update">
             <div class="row">
@@ -73,6 +80,8 @@
         </div>
     </div>
 </div>
+}
+
 <div class="row" id="divTime">
     
 </div>
@@ -83,6 +92,22 @@
     private string Lat { get; set; }
     private string Lng { get; set; }
     private List<WeatherForecast> weatherForecasts;
+    public string Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Get the current URL
+        var uri = new Uri(NavigationManager.Uri);
+
+        // Get the ID from the URL
+        var segments = uri.Segments;
+        if (segments.Length >= 2)
+        {
+            Id = segments[segments.Length - 1];
+            delivery = await Http.GetFromJsonAsync<Delivery>("/api/DeliveryController/GetDelivery?Id=" + Id);
+        }
+        
+    }
 
     private async Task Update()
     {

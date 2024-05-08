@@ -5,87 +5,35 @@ using System;
 using static System.Net.WebRequestMethods;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using JourneyPlanner.Server.Interfaces;
 
 namespace PlanYourJourney.API
 {
     [ApiController]
-    [Route("api/DeliveryController")]
+    [Route("api/[Controller]")]
     public class DeliveryController : Controller
     {
-        private readonly PlanYourJourneyContext _context;
+        private readonly IDelivery _IDelivery;
 
-        public DeliveryController(PlanYourJourneyContext context)
+        public DeliveryController(IDelivery iDelivery)
         {
-            _context = context;
+            _IDelivery = iDelivery;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
-
+        //Get all user
         [HttpGet]
-        [Route("GetDelivery")]
-        public IEnumerable<Delivery> Get()
+        public async Task<List<Delivery>> Get()
         {
-            return _context.Deliveries.ToList();
+            return await Task.FromResult(_IDelivery.GetDeliveryDetails());
         }
 
-        [HttpPost]
-        [Route("CreateDelivery")]
-        public async Task<IActionResult> CreateDelivery(Delivery model)
+        [HttpGet("{Id}")]
+        public IActionResult Get(int Id)
         {
-           
-            //Have 3 step
-            //1. Get Location Latitude and Longitude
-
-            if (ModelState.IsValid)
-            {   _context.Deliveries.Add(model);
-                await _context.SaveChangesAsync();
-                return Ok();
-            }
-
-            return BadRequest(ModelState);
-        }
-
-        [HttpPut]
-        [Route("UpdateDelivery")]
-        public async Task<IActionResult> UpdateDelivery(Delivery model)
-        {
-            if (ModelState.IsValid)
+            Delivery delivery = _IDelivery.GetDeliveryData(Id);
+            if (delivery != null)
             {
-                var ExistingModel = await _context.Deliveries.FirstOrDefaultAsync(m => m.Id == model.Id);
-                if (ExistingModel != null)
-                {
-                    ExistingModel.DeliveryDate = model.DeliveryDate;
-                    ExistingModel.DeliveryTime = model.DeliveryTime;
-                    ExistingModel.IsCompleted = model.IsCompleted;
-                    ExistingModel.IsCancelled = model.IsCancelled;
-
-                    await _context.SaveChangesAsync();
-                }
-                else
-                {
-                    return NotFound();
-                }
-            }
-            else
-            {
-                return BadRequest(ModelState);
-            }
-            return Ok();
-        }
-
-        [HttpDelete]
-        public async Task<IActionResult> DeleteDelivery(int Id)
-        {
-            var model = await _context.Deliveries.FirstOrDefaultAsync(m => m.Id == Id);
-
-            if (model != null)
-            {
-                _context.Deliveries.Remove(model);
-                await _context.SaveChangesAsync();
-                return Ok();
+                return Ok(delivery);
             }
             else
             {
@@ -93,6 +41,23 @@ namespace PlanYourJourney.API
             }
         }
 
+        [HttpPost]
+        public void Post(Delivery delivery)
+        {
+            _IDelivery.AddDelivery(delivery);
+        }
 
+        [HttpPut]
+        public void Put(Delivery delivery)
+        {
+            _IDelivery.UpdateDelivery(delivery);
+        }
+
+        [HttpDelete("{Id}")]
+        public IActionResult Delete(int Id)
+        {
+            _IDelivery.DeleteDeliveryData(Id);
+            return Ok();
+        }
     }
 }

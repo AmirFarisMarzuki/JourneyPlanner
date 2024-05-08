@@ -1,0 +1,56 @@
+﻿@page "/delivery/Delete/{Id:int}"
+@using JourneyPlanner.Shared.Models
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h1>Delete Delivery</h1>
+<h3>Are you sure you want to delete this item?</h3>
+
+<div class="form-group">
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Date</th>
+                <th>@delivery.DeliveryDate.Value.ToShortDateString()</th>             
+            </tr>
+            <tr>
+                <th>Name</th>
+                <th>@delivery.DeliveryName</th>
+            </tr>
+            <tr>
+                <th>Time</th>
+                <th>@delivery.DeliveryTime</th>
+            </tr>
+            <tr>
+                <th>Address</th>
+                <th>@delivery.DeliveryAddress</th>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="form-group">
+    <input type="submit" value="Delete" @onclick="(async () => await RemoveDelivery(delivery.Id))" class="btn btn-danger"></input>
+    <input type="submit" value="Cancel" @onclick="(() => Cancel())" class="btn btn-warning"></input>
+</div>
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    Delivery delivery = new Delivery();
+
+    protected override async Task OnInitializedAsync()
+    {
+        delivery = await Http.GetFromJsonAsync<Delivery>("api/Delivery/" + Id);
+    }
+
+
+    private async Task RemoveDelivery(int Id)
+    {
+        await Http.DeleteAsync("api/Delivery/" + Id);
+        NavigationManager.NavigateTo("/");
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

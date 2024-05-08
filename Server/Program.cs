@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.ResponseCompression;
 using JourneyPlanner.Shared.Models;
 using Microsoft.EntityFrameworkCore;
+using JourneyPlanner.Server.Interfaces;
+using JourneyPlanner.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddDbContext<PlanYourJourneyContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//builder.Services.AddTransient<IDelivery, DeliveryManager>();
+builder.Services.AddScoped<IDelivery, DeliveryManager>();
+
 
 var app = builder.Build();
 

@@ -1,13 +1,33 @@
 ﻿@page "/"
 @using JourneyPlanner.Shared.Models
+@inject NavigationManager Navigation
 @inject HttpClient Http
 
 <PageTitle>Weather forecast</PageTitle>
 
 <h1>Weather forecast</h1>
 
-<p>This component demonstrates fetching data from the server.</p>
-
+<div class="row">
+    <div class="col-md-6">
+        <a href='/delivery/Add' class="btn btn-primary" role="button">
+            <i class="fas fa-user-plus"></i>
+            Add Delivery
+        </a>
+        <p>@ErrorMessage</p>
+    </div>
+    <div class="input-group col">
+        <input type="text" class="form-control" placeholder="Search delivery by name"
+               @bind="SearchString" @bind:event="oninput" @onkeyup="FilterUser" />
+        @if (SearchString.Length > 0)
+        {
+            <div class="input-group-append">
+                <button class="btn btn-danger" @onclick="ResetSearch">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        }
+    </div>
+</div>
 @if (deliveries == null)
 {
     <p><em>Loading...</em></p>
@@ -19,7 +39,7 @@ else
             <tr>
                 <th>Date</th>
                 <th>Name</th>
-                <th>Time</th>c 
+                <th>Time</th>
                 <th>Address</th>
                 <th></th>
             </tr>
@@ -28,13 +48,21 @@ else
             @foreach (var item in deliveries)
             {
                 <tr>
-                    <td>@item.DeliveryDate.Value.ToShortDateString() ?? 0</td>
+                    <td>@item.DeliveryDate.Value.ToShortDateString()</td>
                     <td>@item.DeliveryName</td>
                     <td>@item.DeliveryTime</td>
                     <td>@item.DeliveryAddress</td>
-                    <td>
-                        <a href="/updatedelivery/@item.Id" class="btn btn-warning">Edit</a>
+                    @*<td>
+                        <a href="/updatedelivery/Id=@item.Id" class="btn btn-warning">Edit</a>
                         <a class="btn btn-danger" onclick="deleteRecord('@item.Id')">Delete</a>
+                    </td>*@
+                    <td>
+                        <a href='/delivery/Edit/@item.Id' class="btn btn-outline-dark" role="button">
+                            Edit
+                        </a>
+                        <a href='/delivery/Delete/@item.Id' class="btn btn-outline-danger" role="button">
+                            Delete
+                        </a>
                     </td>
                 </tr>
             }
@@ -43,13 +71,52 @@ else
 }
 
 @code {
-    private Delivery[]? deliveries;
+    protected List<Delivery> deliveries = new();
+    protected List<Delivery> SearchDeliveryData = new(); 
+    protected string SearchString { get; set; } = string.Empty;
+    protected Delivery delivery = new();
+    protected string ErrorMessage { get; set; } = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        //deliveries = await Http.GetFromJsonAsync<Delivery[]>("GetDelivery");
-        string url = "/api/DeliveryController/GetDelivery";
-        deliveries = await Http.GetFromJsonAsync<Delivery[]>(url);
+        await GetDelivery();       
+    }
+    protected async Task GetDelivery()
+    {
+        try
+        {
+            string url = "/api/Delivery";
+            deliveries = await Http.GetFromJsonAsync<List<Delivery>>(url);
+        }
+        catch(Exception Ex)
+        {
+            ErrorMessage = Ex.Message;
+        }
+        
+
     }
 
+    protected void FilterUser()
+    {
+        if (!string.IsNullOrEmpty(SearchString))
+        {
+            deliveries = SearchDeliveryData
+                .Where(x => x.DeliveryName.IndexOf(SearchString, StringComparison.OrdinalIgnoreCase) != -1)
+                .ToList();
+        }
+        else
+        {
+            deliveries = SearchDeliveryData;
+        }
+    }
+
+    protected void DeleteConfirm(int userID)
+    {
+        delivery = deliveries.FirstOrDefault(x => x.Id == userID);
+    }
+    public void ResetSearch()
+    {
+        SearchString = string.Empty;
+        deliveries = SearchDeliveryData;
+    }
 }
