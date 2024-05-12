@@ -16,6 +16,7 @@ namespace JourneyPlanner.Shared.Models
         public string? Remarks { get; set; }
         public string? Latitude { get; set; }
         public string? Longitude { get; set; }
+        public string? Weather { get; set; }
 
     }
 }

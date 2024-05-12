@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using JourneyPlanner.Shared.Models;
 using System;
@@ -6,6 +7,9 @@ using static System.Net.WebRequestMethods;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using JourneyPlanner.Server.Interfaces;
+using System.Net.Http.Json;
+using System.Net.Http;
+using System.Collections.Generic;
 
 namespace PlanYourJourney.API
 {
@@ -42,8 +46,8 @@ namespace PlanYourJourney.API
         }
 
         [HttpPost]
-        public void Post(Delivery delivery)
-        {
+        public async Task Post(Delivery delivery)
+        {  
             _IDelivery.AddDelivery(delivery);
         }
 

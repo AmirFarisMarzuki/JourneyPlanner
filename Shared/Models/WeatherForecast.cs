@@ -2,7 +2,7 @@
 {
     public class WeatherForecast
     {
-        public string Time {  get; set; }
+        public string DateTime {  get; set; }
         public int Temperature { get; set; }
         public string Summary { get; set; }
     }

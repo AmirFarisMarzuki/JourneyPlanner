@@ -27,17 +27,7 @@
     <div class="mb-3">
         <label for="DeliveryAddress" class="form-label">Address</label>
         <div class="col-md-4">
-            <InputText class="form-control" @bind-Value="delivery.DeliveryAddress" @oninput="(() => GetLocation())" />
-        </div>
-    </div>
-    <div class="mb-3">
-        <label for="Latitude" class="form-label">Latitude</label>
-        <div class="col-md-2">
-            <InputText class="form-control" @bind-Value="delivery.Latitude" />
-        </div>
-        <label for="Longitude" class="form-label">Longitude</label>
-        <div class="col-md-2">
-            <InputText class="form-control" @bind-Value="delivery.Longitude" />
+            <InputText class="form-control" @bind-Value="delivery.DeliveryAddress"/>
         </div>
     </div>
     <div class="form-group">
@@ -64,6 +54,9 @@
 
     protected async Task SaveDelivery()
     {
+        await GetLocation();
+        await GetWeatherData();
+
         if (Id != 0)
         {
             await Http.PutAsJsonAsync("api/Delivery", delivery);
@@ -79,6 +72,7 @@
     {
         NavigationManager.NavigateTo("/");
     }
+
 
     private async Task GetLocation()
     {
@@ -108,6 +102,70 @@
         {
             Console.WriteLine($"An error occurred: {ex.Message}");
             //CoordinatesMessage = "An error occurred while fetching location data.";
+        }
+    }
+
+    private async Task GetWeatherData()
+    {
+        try
+        {
+            string date = delivery.DeliveryDate.Value.ToShortDateString();
+            if (delivery.Latitude != null && delivery.Longitude != null)
+            {
+
+                string url = "Weather?lat={" + delivery.Latitude + "}&lng={" + delivery.Longitude + "}&date={" + date + "}&time={" + delivery.DeliveryTime + "}";
+                var weatherForecasts = await Http.GetFromJsonAsync<WeatherForecast[]>(url);
+                if (weatherForecasts != null && weatherForecasts.Length > 0)
+                {
+                    string summary = weatherForecasts[0].Summary;
+                    int temp = weatherForecasts[0].Temperature;
+                    string icon = GetIcon(summary);
+
+                    delivery.Weather = icon + temp + "&#176;</h3><h5>" + summary + " at " + delivery.DeliveryTime + "</h5>";
+                }
+
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
+            //CoordinatesMessage = "An error occurred while fetching location data.";
+        }
+    }
+
+    private string GetIcon(string summary)
+    {
+        if(summary == "Clear")
+        {
+            return "<h3><span class=\"oi oi-sun link-warning\"></span>&nbsp;";
+        }
+        else if (summary == "Cold")
+        {
+            return "<h3><span class=\"oi oi-droplet link-primary\"></span>&nbsp;";
+        }
+        else if (summary == "Hazy")
+        {
+            return "<h3><span class=\"oi oi-menu link-secondary\"></span>&nbsp;";
+        }
+        else if (summary == "Rainy")
+        {
+            return "<h3><span class=\"oi oi-rain link-primary\"></span>&nbsp;";
+        }
+        else if (summary == "Hot")
+        {
+            return "<h3><span class=\"oi oi-fire link-danger\"></span>&nbsp;";
+        }
+        else if (summary == "Cloudy")
+        {
+            return "<h3><span class=\"oi oi-cloudy link-secondary\"></span>&nbsp;";
+        }
+        else if (summary == "Thunder")
+        {
+            return "<h3><span class=\"oi oi-bolt link-warning\"></span>&nbsp;";
+        }
+        else
+        {
+            return "";
         }
     }
 }

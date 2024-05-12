@@ -12,12 +12,12 @@ namespace JourneyPlanner.Server.Services
             _context = context;
         }
 
-        //Get all user details
+        //Get all delivery details
         public List<Delivery> GetDeliveryDetails()
         {
             try
             {
-                return _context.Deliveries.ToList();
+                return _context.Deliveries.OrderBy(d => d.DeliveryDate).ToList();
             }
             catch
             {

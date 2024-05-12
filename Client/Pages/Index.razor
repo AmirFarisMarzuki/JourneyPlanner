@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using JourneyPlanner.Shared.Models
+@using Microsoft.AspNetCore.Components
 @inject NavigationManager Navigation
 @inject HttpClient Http
 
@@ -41,6 +42,7 @@ else
                 <th>Name</th>
                 <th>Time</th>
                 <th>Address</th>
+                <th>Weather</th>
                 <th></th>
             </tr>
         </thead>
@@ -52,11 +54,10 @@ else
                     <td>@item.DeliveryName</td>
                     <td>@item.DeliveryTime</td>
                     <td>@item.DeliveryAddress</td>
-                    @*<td>
-                        <a href="/updatedelivery/Id=@item.Id" class="btn btn-warning">Edit</a>
-                        <a class="btn btn-danger" onclick="deleteRecord('@item.Id')">Delete</a>
-                    </td>*@
-                    <td>
+                    <td tyle="text-align:center;">
+                        @((MarkupString)item.Weather)
+                    </td>
+                    <td >
                         <a href='/delivery/Edit/@item.Id' class="btn btn-outline-dark" role="button">
                             Edit
                         </a>

@@ -1,15 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using JourneyPlanner.Shared.Models;
+using Microsoft.AspNetCore.Http;
+using System.Globalization;
+using System;
 
 namespace PlanYourJourney.Controllers
 {
     [ApiController]
-    [Route("api/WeatherController")]
-    public class WeatherController : Controller
+    [Route("[controller]")]
+    public class WeatherController : ControllerBase
     {
         private static readonly string[] Summaries = new[]
         {
-            "Clear","Cold","Hazy","Rainy","Hot","Mild","Warm","Thunder"
+            "Clear","Cold","Hazy","Rainy","Hot","Cloudy","Thunder"
         };
 
         //Logger instance injected to the controller via dependency injection. Allows controller to log messages.
@@ -21,25 +24,39 @@ namespace PlanYourJourney.Controllers
         }
 
 
-        [Route("GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get(string lat, string lng)  
+        [HttpGet]
+        public IEnumerable<WeatherForecast> Get(string lat, string lng, string date, string time)
         {
             var forecasts = new List<WeatherForecast>();
 
-            for(int hour=8; hour<=17; hour++)
-            {
-                string timeString = new DateTime(1, 1, 1, hour, 0, 0).ToString("htt");
-                var wSummary = GetRandomSummary();
-                var forecast = new WeatherForecast
-                {
-                    Time = timeString,
-                    Summary = wSummary,
-                    Temperature = GetRandomNumber(wSummary)
-                };
+            DateTime? combinedDateTime = null;
+            DateTime Date;
+            DateTime Time;
 
-                // Add the generated forecast to the list
-                forecasts.Add(forecast);
+            if (DateTime.TryParseExact(date, "d/M/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out Date))
+            {
+                // Parse the time string using the specified format
+                if (DateTime.TryParseExact(time, "hhtt", CultureInfo.InvariantCulture, DateTimeStyles.None, out Time))
+                {
+                    // Combine date and time
+                    combinedDateTime = Date.Add(Time.TimeOfDay);
+
+                    // Output the combined DateTime
+                    Console.WriteLine("Combined DateTime: " + combinedDateTime);
+                }
             }
+
+            var wSummary = GetRandomSummary();
+            var forecast = new WeatherForecast
+            {
+                DateTime = combinedDateTime.ToString(),
+                Summary = wSummary,
+                Temperature = GetRandomNumber(wSummary)
+            };
+
+            // Add the generated forecast to the list
+            forecasts.Add(forecast);
+
 
             return forecasts;
         }
@@ -52,13 +69,13 @@ namespace PlanYourJourney.Controllers
 
         private int GetRandomNumber(string summary)
         {
-            if(summary == "Warm" || summary == "Hot" || summary == "Mild" || summary == "Hazy")
+            if(summary == "Clear" || summary == "Hot"|| summary == "Hazy")
             {
                 return new Random().Next(20,37);
             }
-            else if(summary == "Cold" || summary == "Rainy" || summary == "Thunder")
+            else if(summary == "Cold" || summary == "Rainy" || summary == "Thunder" || summary == "Cloudy")
             {
-                return new Random().Next(0, 20);
+                return new Random().Next(5, 20);
             }
             else
             {
